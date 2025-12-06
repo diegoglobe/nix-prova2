@@ -103,11 +103,11 @@ MYSQL_ROOT
           mkdir -p "$TOMCAT_DIR/logs"
           touch "$TOMCAT_DIR/logs/catalina.out"
           
-          # 6. CREA/CONFIGURA IL TUO SCRIPT DI AVVIO
+          # 6. CREA IL TUO SCRIPT DI AVVIO CON ESCAPE COMPLETO
           echo "📝 Configuro script di avvio personalizzato..."
           
-          # CORREZIONE: Uso di 'EOF' con escape delle variabili $
-          cat > "$HOME_DIR/start_tomcat.sh" <<'START_SCRIPT'
+          # CORREZIONE: Uso di cat con echo per parti problematiche
+          cat > "$HOME_DIR/start_tomcat.sh" <<'EOF'
 #!/bin/bash
 
 # Percorsi specifici per Tomcat 10.1.39
@@ -153,14 +153,14 @@ else
     echo -e "${red}❌ Tomcat non avviato${NC}"
     exit 1
 fi
-START_SCRIPT
+EOF
           
           chmod +x "$HOME_DIR/start_tomcat.sh"
           
           # 7. CREA SERVICE FILE PER SYSTEMD (per produzione)
           echo "⚙️  Creo file di servizio systemd..."
           
-          cat > "$PROJECT_DIR/gestione-commesse.service" <<'SERVICE_FILE'
+          cat > "$PROJECT_DIR/gestione-commesse.service" <<'EOF'
 [Unit]
 Description=Portale Commesse - Tomcat Service
 After=network.target
@@ -187,9 +187,9 @@ PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
-SERVICE_FILE
+EOF
           
-          # 8. AVVIA TOMCAT CON IL TUO SCRIPT
+          # 8. AVVIA TOMCAT
           echo "🚀 Avvio Tomcat..."
           
           # Esporta JAVA_HOME (Nix gestisce il percorso)
@@ -201,17 +201,17 @@ SERVICE_FILE
           echo "☕ Java: $JAVA_HOME"
           echo "🐈 Tomcat: $CATALINA_HOME"
           
-          # Avvia Tomcat direttamente (non con lo script per evitare check processo)
+          # Avvia Tomcat direttamente
           cd "$TOMCAT_DIR"
           ./bin/catalina.sh start > "$TOMCAT_DIR/logs/catalina.out" 2>&1 &
           cd "$PROJECT_DIR"
           
           sleep 5
           
-          # 9. SCRIPT DI MONITORAGGIO E GESTIONE (SENZA ERRORI DI ESCAPE)
+          # 9. SCRIPT DI MONITORAGGIO E GESTIONE SEMPLICE
           echo "📊 Creo script di gestione..."
           
-          cat > "$PROJECT_DIR/gestisci-servizi.sh" <<'GESTISCI_SCRIPT'
+          cat > "$PROJECT_DIR/gestisci-servizi.sh" <<'EOF'
 #!/bin/bash
 
 case "$1" in
@@ -308,7 +308,7 @@ case "$1" in
     exit 1
     ;;
 esac
-GESTISCI_SCRIPT
+EOF
           
           chmod +x "$PROJECT_DIR/gestisci-servizi.sh"
           
