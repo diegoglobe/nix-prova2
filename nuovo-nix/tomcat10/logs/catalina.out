@@ -1,0 +1,34 @@
+Tomcat started.
+06-Dec-2025 22:32:45.700 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.20
+06-Dec-2025 22:32:45.712 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 19 2024 12:49:58 UTC
+06-Dec-2025 22:32:45.713 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.20.0
+06-Dec-2025 22:32:45.713 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+06-Dec-2025 22:32:45.713 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.6.87.2-microsoft-standard-WSL2
+06-Dec-2025 22:32:45.714 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+06-Dec-2025 22:32:45.714 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /nix/store/0n8rsyvlwy87bqb7151si4c4ifqcp31c-openjdk-21+35/lib/openjdk
+06-Dec-2025 22:32:45.714 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           21+35-nixos
+06-Dec-2025 22:32:45.714 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+06-Dec-2025 22:32:45.714 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/commesse/nuovo-nix/tomcat10
+06-Dec-2025 22:32:45.715 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/commesse/nuovo-nix/tomcat10
+06-Dec-2025 22:32:45.743 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/commesse/nuovo-nix/tomcat10/conf/logging.properties
+06-Dec-2025 22:32:45.743 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/commesse/nuovo-nix/tomcat10
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/commesse/nuovo-nix/tomcat10
+06-Dec-2025 22:32:45.744 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/commesse/nuovo-nix/tomcat10/temp
+06-Dec-2025 22:32:45.748 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+06-Dec-2025 22:32:46.260 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+06-Dec-2025 22:32:46.313 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [933] milliseconds
+06-Dec-2025 22:32:46.398 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+06-Dec-2025 22:32:46.399 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.20]
+06-Dec-2025 22:32:46.431 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+06-Dec-2025 22:32:46.448 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [132] milliseconds
+06-Dec-2025 22:36:16.593 INFO [Catalina-utility-2] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [/home/commesse/nuovo-nix/tomcat10/webapps/commesse]
+06-Dec-2025 22:36:21.005 INFO [Catalina-utility-2] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/commesse/nuovo-nix/tomcat10/webapps/commesse] has finished in [4,414] ms
