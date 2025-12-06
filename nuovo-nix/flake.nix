@@ -106,6 +106,7 @@ MYSQL_ROOT
           # 6. CREA/CONFIGURA IL TUO SCRIPT DI AVVIO
           echo "📝 Configuro script di avvio personalizzato..."
           
+          # CORREZIONE: Uso di 'EOF' con escape delle variabili $
           cat > "$HOME_DIR/start_tomcat.sh" <<'START_SCRIPT'
 #!/bin/bash
 
@@ -189,7 +190,7 @@ WantedBy=multi-user.target
 SERVICE_FILE
           
           # 8. AVVIA TOMCAT CON IL TUO SCRIPT
-          echo "🚀 Avvio Tomcat con il tuo script..."
+          echo "🚀 Avvio Tomcat..."
           
           # Esporta JAVA_HOME (Nix gestisce il percorso)
           JAVA_NIX_PATH=$(find /nix/store -name "jdk-21*" -type d 2>/dev/null | head -1)
@@ -200,104 +201,101 @@ SERVICE_FILE
           echo "☕ Java: $JAVA_HOME"
           echo "🐈 Tomcat: $CATALINA_HOME"
           
-          # Avvia usando il tuo script
+          # Avvia Tomcat direttamente (non con lo script per evitare check processo)
           cd "$TOMCAT_DIR"
           ./bin/catalina.sh start > "$TOMCAT_DIR/logs/catalina.out" 2>&1 &
           cd "$PROJECT_DIR"
           
           sleep 5
           
-          # 9. SCRIPT DI MONITORAGGIO E GESTIONE
+          # 9. SCRIPT DI MONITORAGGIO E GESTIONE (SENZA ERRORI DI ESCAPE)
           echo "📊 Creo script di gestione..."
           
           cat > "$PROJECT_DIR/gestisci-servizi.sh" <<'GESTISCI_SCRIPT'
 #!/bin/bash
 
-green='\033[0;32m'
-yellow='\033[1;33m'
-red='\033[0;31m'
-NC='\033[0m' # No Color
-
 case "$1" in
   start)
-    echo -e "${green}🚀 Avvio servizi...${NC}"
+    echo "🚀 Avvio servizi..."
     
     # Avvia MariaDB
     if ! ps aux | grep -q "[m]ysqld.*3307"; then
-      echo -e "${green}🗄️  Avvio MariaDB...${NC}"
+      echo "🗄️  Avvio MariaDB..."
       mysqld_safe --datadir="$PWD/mysql-data/data" --port=3307 &
       sleep 5
     fi
     
     # Avvia Tomcat
     if ! ps aux | grep -q "[c]atalina"; then
-      echo -e "${green}🐈 Avvio Tomcat...${NC}"
+      echo "🐈 Avvio Tomcat..."
       cd "$HOME/tomcat10"
       ./bin/catalina.sh start &
       cd -
     fi
     
     sleep 3
+    echo "✅ Servizi avviati"
     ;;
     
   stop)
-    echo -e "${yellow}🛑 Fermo servizi...${NC}"
+    echo "🛑 Fermo servizi..."
     
     # Ferma Tomcat
     if [ -f "$HOME/tomcat10/bin/catalina.sh" ]; then
-      echo -e "${yellow}🐈 Fermo Tomcat...${NC}"
+      echo "🐈 Fermo Tomcat..."
       "$HOME/tomcat10/bin/catalina.sh" stop 2>/dev/null || true
     fi
     
     # Ferma MariaDB
-    echo -e "${yellow}🗄️  Fermo MariaDB...${NC}"
+    echo "🗄️  Fermo MariaDB..."
     killall mysqld 2>/dev/null || true
     
     sleep 2
+    echo "✅ Servizi fermati"
     ;;
     
   restart)
-    echo -e "${yellow}🔄 Riavvio servizi...${NC}"
+    echo "🔄 Riavvio servizi..."
     $0 stop
     sleep 2
     $0 start
     ;;
     
   status|"")
-    echo -e "${green}=== PORTA LE COMMESSE - STATO SERVIZI ===${NC}"
+    echo "=== PORTA LE COMMESSE - STATO SERVIZI ==="
     echo ""
     
     # MariaDB
     if ps aux | grep -q "[m]ysqld.*3307"; then
-      echo -e "${green}🗄️  MariaDB: ✅ Attivo (porta 3307)${NC}"
+      echo "🗄️  MariaDB: ✅ Attivo (porta 3307)"
       mysql --host=127.0.0.1 --port=3307 -u commesse -pcommesse -e "SELECT 'Database OK' as Status;" gestione_commesse 2>/dev/null || \
-        echo -e "${yellow}🗄️  MariaDB: ⚠️  Connessione fallita${NC}"
+        echo "🗄️  MariaDB: ⚠️  Connessione fallita"
     else
-      echo -e "${red}🗄️  MariaDB: ❌ Non attivo${NC}"
+      echo "🗄️  MariaDB: ❌ Non attivo"
     fi
     
     echo ""
     
     # Tomcat
     if ps aux | grep -q "[c]atalina"; then
-      echo -e "${green}🐈 Tomcat: ✅ Processo attivo${NC}"
+      echo "🐈 Tomcat: ✅ Processo attivo"
       if curl -s http://localhost:8080 > /dev/null; then
-        echo -e "${green}🌐 Tomcat: ✅ Risponde su porta 8080${NC}"
+        echo "🌐 Tomcat: ✅ Risponde su porta 8080"
       else
-        echo -e "${yellow}🌐 Tomcat: ⚠️  Non risponde HTTP${NC}"
+        echo "🌐 Tomcat: ⚠️  Non risponde HTTP"
       fi
       echo "   Logs: $HOME/tomcat10/logs/catalina.out"
     else
-      echo -e "${red}🐈 Tomcat: ❌ Non attivo${NC}"
+      echo "🐈 Tomcat: ❌ Non attivo"
     fi
     
     echo ""
-    echo -e "${green}📁 Directory servizi:${NC}"
+    echo "📁 Directory servizi:"
     echo "   Tomcat:   $HOME/tomcat10/"
     echo "   Database: $PWD/mysql-data/"
     echo "   Script:   $HOME/start_tomcat.sh"
     echo ""
-    echo -e "${green}🔧 Comandi:${NC}"
+    echo "🔧 Comandi:"
     echo "   $0 start     - Avvia tutti i servizi"
     echo "   $0 stop      - Ferma tutti i servizi"
     echo "   $0 restart   - Riavvia tutti i servizi"
@@ -305,7 +303,7 @@ case "$1" in
     ;;
     
   *)
-    echo -e "${red}❌ Comando sconosciuto: $1${NC}"
+    echo "❌ Comando sconosciuto: $1"
     echo "Usa: $0 [start|stop|restart|status]"
     exit 1
     ;;
@@ -322,6 +320,7 @@ GESTISCI_SCRIPT
           echo "   Tomcat:     $HOME_DIR/tomcat10/"
           echo "   Database:   $PROJECT_DIR/mysql-data/"
           echo "   Script:     $HOME_DIR/start_tomcat.sh"
+          echo "   Gestione:   $PROJECT_DIR/gestisci-servizi.sh"
           echo ""
           echo "🔌 Database:"
           echo "   mysql -h 127.0.0.1 -P 3307 -u commesse -pcommesse gestione_commesse"
@@ -331,9 +330,9 @@ GESTISCI_SCRIPT
           echo "⚙️  Gestione servizi:"
           echo "   ./gestisci-servizi.sh status    # Verifica stato"
           echo "   ./gestisci-servizi.sh restart   # Riavvia tutto"
-          echo "   tail -f $HOME_DIR/tomcat10/logs/catalina.out  # Logs Tomcat"
+          echo "   tail -f $HOME_DIR/tomcat10/logs/catalina.out"
           echo ""
-          echo "📋 Per produzione (su VM reale):"
+          echo "📋 Service per produzione:"
           echo "   sudo cp gestione-commesse.service /etc/systemd/system/"
           echo "   sudo systemctl daemon-reload"
           echo "   sudo systemctl enable --now gestione-commesse"
