@@ -5,144 +5,123 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      
-      # Percorso del tuo dump SQL (mettilo nella cartella `db/`)
-      dbDump = ./db/gestione_commesse.sql;
-      
     in
     {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          # Java 21
           jdk21
-          
-          # Node.js 20
           nodejs_20
-          
-          # Angular CLI
           nodePackages."@angular/cli"
-          
-          # MariaDB (client + server)
           mariadb
           mariadb-client
-          
-          # Tomcat 10
           tomcat10
-          
-          # Apache 2.4
           apacheHttpd
-          
-          # Utilità
           git
           curl
           gnused
         ];
 
-        # Script che viene eseguito quando entri in nix develop
         shellHook = ''
           echo "🚀 Avvio ambiente Portale Commesse..."
           
-          # 1. Crea directory necessarie
-          mkdir -p /tmp/commesse/{db,tomcat,logs}
+          # 1. Ferma servizi precedenti
+          echo "🛑 Fermo servizi precedenti..."
+          killall mysqld 2>/dev/null || true
+          ${pkgs.tomcat10}/bin/catalina.sh stop 2>/dev/null || true
+          sleep 2
           
-          # 2. AVVIA MARIA DB
-          echo "🗄️  Avvio MariaDB..."
+          # 2. Setup MariaDB
+          echo "🗄️  Configuro MariaDB..."
+          MYSQL_DIR="/tmp/commesse-mysql"
+          mkdir -p "$MYSQL_DIR/data"
           
-          # Inizializza database se non esiste
-          if [ ! -d "/tmp/commesse/db/data" ]; then
-            echo "📦 Inizializzo database..."
+          # Inizializza DB se vuoto
+          if [ ! -f "$MYSQL_DIR/data/ibdata1" ]; then
             mysql_install_db \
               --auth-root-authentication-method=normal \
-              --datadir=/tmp/commesse/db/data \
+              --datadir="$MYSQL_DIR/data" \
               --basedir=${pkgs.mariadb}
           fi
           
-          # Avvia MariaDB in background
+          # Avvia MariaDB
           mysqld_safe \
-            --datadir=/tmp/commesse/db/data \
-            --socket=/tmp/commesse/db/mysql.sock \
+            --datadir="$MYSQL_DIR/data" \
+            --socket="$MYSQL_DIR/mysql.sock" \
             --port=3307 \
-            --pid-file=/tmp/commesse/db/mysql.pid \
-            --log-error=/tmp/commesse/logs/mysql.log &
+            --pid-file="$MYSQL_DIR/mysql.pid" \
+            --log-error="$MYSQL_DIR/mysql.log" &
           
-          # Attendi che MariaDB sia pronto
-          sleep 3
+          # Attendi avvio
+          echo "⏳ Attendo avvio MariaDB..."
+          sleep 8
           
-          # 3. CONFIGURA UTENTE E DATABASE
-          echo "👤 Configuro utente 'commesse' e database..."
+          # 3. Configura database e utenti
+          echo "🔧 Configuro database..."
           
-          # Crea utente commesse (senza password per semplicità)
-          mysqladmin --host=127.0.0.1 --port=3307 --user=root --password= create 2>/dev/null || true
+          # Crea utente root temporaneo
+          mysqladmin --host=127.0.0.1 --port=3307 --user=root password '' 2>/dev/null || true
           
-          mysql --host=127.0.0.1 --port=3307 --user=root <<EOF
+          mysql --host=127.0.0.1 --port=3307 --user=root --password= <<EOF
           CREATE DATABASE IF NOT EXISTS gestione_commesse;
           CREATE USER IF NOT EXISTS 'commesse'@'localhost' IDENTIFIED BY 'commesse';
+          CREATE USER IF NOT EXISTS 'commesse'@'127.0.0.1' IDENTIFIED BY 'commesse';
           GRANT ALL PRIVILEGES ON gestione_commesse.* TO 'commesse'@'localhost';
           GRANT ALL PRIVILEGES ON gestione_commesse.* TO 'commesse'@'127.0.0.1';
           FLUSH PRIVILEGES;
           EOF
           
-          # 4. IMPORTA IL DUMP SQL (se il file esiste)
-          if [ -f "${dbDump}" ]; then
-            echo "📥 Importo dump SQL..."
-            mysql --host=127.0.0.1 --port=3307 --user=commesse gestione_commesse < "${dbDump}"
-            echo "✅ Database inizializzato con dump SQL"
+          # 4. Importa dump SQL SE ESISTE
+          echo "📥 Cerco dump SQL..."
+          if [ -f "db/gestione_commesse.sql" ]; then
+            echo "✅ Trovato: db/gestione_commesse.sql"
+            echo "📊 Righe: $(wc -l < db/gestione_commesse.sql)"
+            
+            # Importa con verbose
+            echo "Importazione in corso..."
+            mysql --host=127.0.0.1 --port=3307 --user=commesse --password=commesse gestione_commesse < db/gestione_commesse.sql 2>&1 | head -20
+            
+            # Conta tabelle importate
+            TABLES=$(mysql --host=127.0.0.1 --port=3307 --user=commesse --password=commesse gestione_commesse -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'gestione_commesse';" 2>/dev/null || echo "0")
+            echo "✅ Importate $TABLES tabelle"
           else
-            echo "⚠️  Nessun dump SQL trovato in ${dbDump}"
+            echo "❌ File non trovato: db/gestione_commesse.sql"
+            echo "   Crea il file o controlla il percorso"
+            echo "   Per creare: mkdir -p db && cp /tuo/file.sql db/gestione_commesse.sql"
           fi
           
-          # 5. AVVIA TOMCAT
+          # 5. Avvia Tomcat
           echo "🐈 Avvio Tomcat..."
+          TOMCAT_DIR="/tmp/commesse-tomcat"
+          mkdir -p "$TOMCAT_DIR"/{webapps,logs,temp,work}
           
-          # Crea directory Tomcat
-          mkdir -p /tmp/commesse/tomcat/{webapps,logs,temp,work}
-          
-          # Copia WAR di esempio se esiste
           if [ -f "deploy/app.war" ]; then
-            cp deploy/app.war /tmp/commesse/tomcat/webapps/ROOT.war
+            cp deploy/app.war "$TOMCAT_DIR/webapps/ROOT.war"
+          else
+            # Crea WAR vuoto per test
+            touch "$TOMCAT_DIR/webapps/ROOT.war"
           fi
           
-          # Avvia Tomcat
           export CATALINA_HOME=${pkgs.tomcat10}
-          export CATALINA_BASE=/tmp/commesse/tomcat
-          ${pkgs.tomcat10}/bin/catalina.sh start > /tmp/commesse/logs/tomcat.log 2>&1 &
+          export CATALINA_BASE="$TOMCAT_DIR"
+          ${pkgs.tomcat10}/bin/catalina.sh start > "$TOMCAT_DIR/logs/catalina.out" 2>&1 &
+          sleep 3
           
-          sleep 2
-          
-          # 6. INFORMAZIONI FINALI
+          # 6. Info finali
           echo ""
           echo "✅ AMBIENTE PRONTO"
           echo "=================="
-          echo "📦 Database MariaDB:"
-          echo "   Host: 127.0.0.1:3307"
-          echo "   Utente: commesse (no password)"
-          echo "   Database: gestione_commesse"
+          echo "📦 Database:"
+          echo "   mysql -h 127.0.0.1 -P 3307 -u commesse -pcommesse gestione_commesse"
           echo ""
-          echo "🌐 Tomcat:"
-          echo "   URL: http://localhost:8080"
-          echo "   Logs: /tmp/commesse/logs/tomcat.log"
+          echo "📊 Stato database:"
+          mysql --host=127.0.0.1 --port=3307 --user=commesse --password=commesse gestione_commesse -e "SHOW TABLES;" 2>/dev/null || echo "   ⚠️  Nessuna tabella trovata"
           echo ""
-          echo "🔧 Comandi utili:"
-          echo "   mysql -h 127.0.0.1 -P 3307 -u commesse gestione_commesse"
-          echo "   tail -f /tmp/commesse/logs/tomcat.log"
-          echo "   curl http://localhost:8080"
+          echo "🌐 Tomcat: http://localhost:8080"
+          echo "   Logs: $TOMCAT_DIR/logs/catalina.out"
           echo ""
-          echo "⚠️  Per fermare i servizi:"
-          echo "   pkill -f mysqld"
-          echo "   ${pkgs.tomcat10}/bin/catalina.sh stop"
+          echo "🛑 Per fermare: pkill -f mysqld ; ${pkgs.tomcat10}/bin/catalina.sh stop"
           echo ""
         '';
       };
-
-      # Pacchetto con solo i file (senza servizi)
-      packages.${system}.deploy-files = pkgs.runCommand "deploy-files" {} ''
-        mkdir -p $out
-        echo "=== FILE DI DEPLOY ===" > $out/README.txt
-        echo "" >> $out/README.txt
-        echo "Struttura:" >> $out/README.txt
-        echo "- db/gestione_commesse.sql    # Dump database" >> $out/README.txt
-        echo "- deploy/app.war              # Applicazione WAR" >> $out/README.txt
-        echo "- deploy/webapps/             # File statici Angular" >> $out/README.txt
-      '';
     };
 }
