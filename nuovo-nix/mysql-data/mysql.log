@@ -19,3 +19,5 @@
 2025-12-06 22:32:36 0 [ERROR] Do you already have another server running on port: 3307 ?
 2025-12-06 22:32:36 0 [ERROR] Aborting
 251206 22:32:37 mysqld_safe mysqld from pid file /home/commesse/nuovo-nix/mysql-data/mysql.pid ended
+251206 22:56:34 mysqld_safe Fatal error Can't create database directory ''
+251206 23:15:56 mysqld_safe Fatal error Can't create database directory ''
