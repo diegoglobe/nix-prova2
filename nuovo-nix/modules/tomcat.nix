@@ -1,4 +1,4 @@
-# Tomcat 10
+# modules/tomcat.nix
 { config, pkgs, ... }:
 
 {
@@ -6,14 +6,15 @@
     enable = true;
     package = pkgs.tomcat10;
     
-    user = "tomcat";
-    group = "tomcat";
+    # Non serve più specificare user/group, NixOS li gestisce
     
+    # Java options
     jvmOpts = [
       "-Xms512m"
       "-Xmx1024m"
       "-Djava.awt.headless=true"
       "-Dfile.encoding=UTF-8"
+      "-Djava.security.egd=file:/dev/./urandom"
     ];
   };
 }
