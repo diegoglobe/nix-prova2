@@ -1,33 +1,17 @@
 # modules/mysql.nix
-{ config, pkgs, ... }:
-
+{ config, lib, pkgs, ... }:
 {
   services.mysql = {
     enable = true;
-    package = pkgs.mariadb;
+    # Usa mkDefault per evitare conflitti
+    package = lib.mkDefault pkgs.mariadb;
     
-    ensureDatabases = [ "gestione_commesse" ];
-    ensureUsers = [
-      {
-        name = "commesse";
-        ensurePermissions = {
-          "gestione_commesse.*" = "ALL PRIVILEGES";
-        };
-      }
-    ];
-    
-    settings = {
-      mysqld = {
-        bind-address = "127.0.0.1";
-        character-set-server = "utf8mb4";
-        collation-server = "utf8mb4_unicode_ci";
+    ensureDatabases = [ "commesse_db" ];
+    ensureUsers = [{
+      name = "commesse_user";
+      ensurePermissions = {
+        "commesse_db.*" = "ALL PRIVILEGES";
       };
-    };
-
-    # Imposta password
-    initialScript = pkgs.writeText "mysql-init" ''
-      ALTER USER 'commesse'@'localhost' IDENTIFIED BY 'commesse';
-      FLUSH PRIVILEGES;
-    '';
+    }];
   };
 }

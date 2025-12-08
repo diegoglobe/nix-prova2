@@ -1,0 +1,14 @@
+[Mon Dec 08 20:51:09.343533 2025] [proxy_balancer:emerg] [pid 13852:tid 140737347458880] AH01177: Failed to lookup provider 'shm' for 'slotmem': is mod_slotmem_shm loaded??
+[Mon Dec 08 20:51:09.343764 2025] [:emerg] [pid 13852:tid 140737347458880] AH00020: Configuration Failed, exiting
+[Mon Dec 08 20:51:46.819051 2025] [proxy_balancer:emerg] [pid 13870:tid 140737347458880] AH01177: Failed to lookup provider 'shm' for 'slotmem': is mod_slotmem_shm loaded??
+[Mon Dec 08 20:51:46.819102 2025] [:emerg] [pid 13870:tid 140737347458880] AH00020: Configuration Failed, exiting
+[Mon Dec 08 21:53:29.358530 2025] [proxy_balancer:emerg] [pid 18994:tid 138119334504256] AH01177: Failed to lookup provider 'shm' for 'slotmem': is mod_slotmem_shm loaded??
+[Mon Dec 08 21:53:29.358661 2025] [:emerg] [pid 18994:tid 138119334504256] AH00020: Configuration Failed, exiting
+[Mon Dec 08 21:54:58.573755 2025] [proxy_balancer:emerg] [pid 19008:tid 123268212500288] AH01177: Failed to lookup provider 'shm' for 'slotmem': is mod_slotmem_shm loaded??
+[Mon Dec 08 21:54:58.573817 2025] [:emerg] [pid 19008:tid 123268212500288] AH00020: Configuration Failed, exiting
+[Mon Dec 08 22:06:07.225771 2025] [unixd:alert] [pid 19485:tid 125444047456064] AH02155: getpwuid: couldn't determine user name from uid 4294967295, you probably need to modify the User directive
+[Mon Dec 08 22:06:07.226166 2025] [unixd:alert] [pid 19486:tid 125444047456064] AH02155: getpwuid: couldn't determine user name from uid 4294967295, you probably need to modify the User directive
+[Mon Dec 08 22:06:07.226315 2025] [mpm_event:notice] [pid 19484:tid 125444047456064] AH00489: Apache/2.4.59 (Unix) configured -- resuming normal operations
+[Mon Dec 08 22:06:07.226473 2025] [core:notice] [pid 19484:tid 125444047456064] AH00094: Command line: '/nix/store/8p6dj27q9lp216wj5hh79kd0w0ycnln9-apache-httpd-2.4.59/bin/httpd -f /home/commesse/nuovo-nix/apache/conf/apache-complete.conf'
+[Mon Dec 08 22:06:07.226594 2025] [unixd:alert] [pid 19488:tid 125444047456064] AH02155: getpwuid: couldn't determine user name from uid 4294967295, you probably need to modify the User directive
+[Mon Dec 08 22:09:24.478042 2025] [unixd:alert] [pid 19664:tid 125444047456064] AH02155: getpwuid: couldn't determine user name from uid 4294967295, you probably need to modify the User directive

@@ -1,0 +1,2 @@
+[Mon Dec 08 22:06:43.804559 2025] [proxy:error] [pid 19488:tid 125444020917952] (111)Connection refused: AH00957: http: attempt to connect to 127.0.0.1:8080 (localhost:8080) failed
+[Mon Dec 08 22:06:43.804862 2025] [proxy_http:error] [pid 19488:tid 125444020917952] [client ::1:56224] AH01114: HTTP: failed to make connection to backend: localhost

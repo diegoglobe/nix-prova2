@@ -5,72 +5,67 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-    in
-    {
-      # 1. DEV SHELL (manteniamo quello esistente)
+      
+    in {
+      # ========== DEV SHELL COMPLETA ==========
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          jdk21
-          nodejs_20
-          nodePackages."@angular/cli"
-          mariadb
+          # Stack completo produzione
+          apacheHttpd      # Apache per reverse proxy
+          tomcat10         # Tomcat 10
+          mariadb          # MariaDB 10.11
+          jdk21            # Java 21
+          
+          # Client e utilità
           mariadb-client
-          tomcat10
-          apacheHttpd
+          curl
+          gnused
+          gawk
+          netcat
+          tree
         ];
-
+        
+        # Variabili d'ambiente
+        MYSQL_DATA_DIR = "$PWD/mysql-data";
+        MYSQL_SOCKET = "$PWD/mysql-data/mysql.sock";
+        APACHE_CONFIG_DIR = "$PWD/apache/conf";
+        APACHE_LOGS_DIR = "$PWD/apache/logs";
+        APACHE_WWW_DIR = "$PWD/apache/www";
+        
         shellHook = ''
-          # ... [MANTIENI IL TUO SCRIPT ATTIVO] ...
-          echo "⚡ Ambiente di sviluppo Commesse"
-          echo "MySQL: localhost:3306"
-          echo "Tomcat: http://localhost:8080"
-          echo "Apache: https://localhost:9090 (dopo avvio produzione)"
+          echo "🌐 AMBIENTE PORTALE COMMESSE - PRODUZIONE"
+          echo "========================================="
+          echo ""
+          echo "COMPONENTI:"
+          echo "• Apache HTTPD 2.4 (reverse proxy)"
+          echo "• Tomcat 10.1 (applicazione Spring Boot)"
+          echo "• MariaDB 10.11 (database)"
+          echo "• JDK 21 (Java)"
+          echo ""
+          echo "DIRECTORIES:"
+          echo "• Database: $MYSQL_DATA_DIR"
+          echo "• Apache:   $APACHE_CONFIG_DIR"
+          echo "• Tomcat:   $PWD/tomcat10"
+          echo ""
+          echo "SCRIPT DISPONIBILI:"
+          echo "• ./deploy.sh          - Deploy completo"
+          echo "• ./apache-setup.sh    - Configura Apache"
+          echo "• ./debug.sh           - Debug ambiente"
+          echo ""
+          echo "URL FINALI:"
+          echo "• Frontend: http://localhost:9090/"
+          echo "• API:      http://localhost:9090/commesse-0.0.1-SNAPSHOT/"
+          echo ""
         '';
       };
-
-      # 2. CONFIGURAZIONE NIXOS PER PRODUZIONE/LAB
-      nixosConfigurations.portale-commesse = nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./modules/apache.nix
-          ./modules/tomcat.nix
-          ./modules/mysql.nix
-          ./modules/deploy.nix
-          
-          ({ config, pkgs, ... }: {
-            networking.hostName = "localhost";
-            networking.domain = "local";
-            
-            # NON serve IP statico, usiamo localhost
-            # networking.interfaces.eth0.ipv4.addresses = [{
-            #   address = "192.168.1.68";
-            #   prefixLength = 24;
-            # }];
-            
-            # Rimuovi anche l'extraHosts per pantheon.medialogic.it
-            # networking.extraHosts = ''
-            #   192.168.1.68 pantheon.medialogic.it
-            # '';
-            
-            # Apri solo le porte necessarie in locale
-            networking.firewall.enable = false;  # Disabilita firewall in lab
-            
-            time.timeZone = "Europe/Rome";
-            
-            # Utente per gestione
-            users.users.commesse = {
-              isNormalUser = true;
-              extraGroups = [ "wheel" ];
-              # Se vuoi SSH locale
-              # openssh.authorizedKeys.keys = [ "ssh-ed25519 ..." ];
-            };
-            
-            # Abilita SSH se serve
-            services.openssh.enable = true;
-            
-            system.stateVersion = "23.11";
-          })
-        ];
+      
+      # ========== PACCHETTI PRECONFIGURATI ==========
+      packages.${system} = {
+        # Stack completo come pacchetto
+        commesse-stack = pkgs.writeShellScriptBin "commesse-stack" ''
+          echo "Stack Portale Commesse installato"
+          echo "Usa: nix develop per entrare nell'ambiente"
+        '';
       };
     };
 }
